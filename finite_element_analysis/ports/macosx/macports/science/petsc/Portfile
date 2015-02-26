@@ -1,0 +1,143 @@
+# $Id$
+
+PortSystem	1.0
+PortGroup   conflicts_build 1.0
+PortGroup   active_variants 1.1
+
+name		petsc
+version     3.5.1
+categories  math science
+maintainers	mmoll
+description	Portable, Extensible Toolkit for Scientific Computation
+long_description	PETSc, pronounced PET-see (the S is silent), is a suite \
+        of data structures and routines for the scalable (parallel) solution \
+        of scientific applications modeled by partial differential equations. \
+        It employs the MPI standard for all message-passing communication.
+
+notes       "Add the following line to your .bash_profile if you plan to use\
+            the PETSC makefile rules in $prefix/lib/petsc/conf: \n\
+            \texport PETSC_DIR=${prefix}/lib/petsc"
+
+platforms	darwin
+homepage	http://www.mcs.anl.gov/petsc/petsc-as/
+master_sites	ftp://ftp.mcs.anl.gov/pub/petsc/release-snapshots/ \
+		http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/
+distname	${name}-lite-${version}
+worksrcdir	${name}-${version}
+universal_variant   no
+
+checksums           rmd160  706e2d3e98d656bccea0c2bf38f95a21ebdf1326 \
+                    sha256  43276d362d06b10a040dfee83b01e2f119c4030acbb303e1fe6fc719626970c7
+
+depends_build-append  port:cmake
+depends_lib-append  port:hdf5 \
+                    port:libyaml\
+                    port:scotch\
+                    port:suitesparse
+
+require_active_variants hdf5 fortran
+
+use_parallel_build  no
+
+configure.args      --prefix=${prefix}/lib/petsc \
+                    --with-mpi=1 \
+                    --with-c-support=1 --with-c++-support=1 \
+                    --PETSC_ARCH=darwin \
+                    --download-suitesparse \
+                    --with-ptscotch-dir=${prefix} \
+                    --download-scalapack \
+                    --download-mumps \
+                    --with-hdf5-dir=${prefix} \
+                    --with-yaml-dir=${prefix}
+
+
+
+pre-configure {
+    if {![file exists ${prefix}/lib/libhdf5_fortran.a]} {
+        return -code error "Please install hdf5 with the +fortran variant enabled first."
+    }
+    configure.args-append \
+        --COPTFLAGS="${configure.optflags}" \
+        --CXXOPTFLAGS="${configure.optflags}" \
+        --FOPTFLAGS="${configure.optflags}" \
+        --LDFLAGS="${configure.ldflags}" \
+        --CFLAGS="${configure.cflags}" \
+        --CXXFLAGS="${configure.cxxflags}"
+}
+
+conflicts_build     petsc
+
+default_variants +atlas +ml +pastix +superlu +hypre
+
+
+variant openmpi description {Build using the OpenMPI compiler} conflicts mpich2 {
+    depends_lib-append port:openmpi
+    configure.args-append \
+        --with-cc=${prefix}/bin/openmpicc \
+        --with-cxx=${prefix}/bin/openmpicxx \
+        --with-fc=${prefix}/bin/openmpif90 \
+        --with-mpiexec=${prefix}/bin/openmpiexec
+}
+
+variant mpich2 description {Build using the MPICH2 compiler} conflicts openmpi {
+    depends_lib-append port:mpich2
+    configure.args-append \
+        --with-cc=${prefix}/bin/mpicc \
+        --with-cxx=${prefix}/bin/picxx \
+        --with-fc=${prefix}/bin/mpif90 \
+        --with-mpiexec=${prefix}/bin/mpiexec
+}
+
+variant accelerate description {Use Accelerate framework for LAPACK} conflicts atlas {
+    configure.args-append \
+        --with-blas-lib=/usr/lib/libblas.dylib \
+        --with-lapack-lib=/usr/lib/liblapack.dylib
+}
+
+variant atlas description {Use Atlas for LAPACK} conflicts accelerate {
+    configure.args-append \
+        --with-blas-lapack-lib=${prefix}/lib/libtatlas.dylib
+    depends_lib-append port:atlas
+}
+
+variant ml description {Install with ML package} conflicts accelerate {
+    configure.args-append \
+        --download-ml
+}
+variant pastix description {Install with external package PaStiX} {
+    configure.args-append \
+        --download-pastix
+}
+variant superlu description {Install with package superlu} {
+    configure.args-append \
+        --download-superlu
+}
+variant hypre description {Install with package hypre } {
+    configure.args-append \
+        --download-hypre
+}
+
+variant static description {Install static lib} {
+    configure.args-append --with-shared-libraries=0 --with-pic=fPIC
+}
+
+if {![variant_isset static]} {
+    configure.args-append --with-shared-libraries=1
+}
+
+if {![variant_isset mpich2]} {
+    default_variants +openmpi
+}
+if {![variant_isset atlas] && ![variant_isset ml]} {
+    default_variants +accelerate
+}
+
+if {[variant_isset ml]} {
+   default_variants +atlas
+}
+
+destroot.destdir DESTDIR=${destroot}${prefix}/lib/petsc
+
+livecheck.type  regex
+livecheck.url   http://www.mcs.anl.gov/petsc/petsc-2/download/index.html
+livecheck.regex petsc-lite-(\[0-9.\]+(-p\[0-9\]+))\\.tar\\.gz

@@ -1,0 +1,501 @@
+\chapter{Random notes}
+\label{cha:random-notes}
+
+\section{Becoming a Feel++ developer}
+\label{feeldevel}
+\subsection{Interest}
+Becoming a \feel developer makes library improvements possible, you may have several proposals which may be usefull. Taking part of the project will enable you to commit some modifications or new applications, we will be glad to count you among us. As an open-source project under GNU licence,  you will be able to commit and participate to the entire project and its various aspects. Our aim is that each user should be involved in the library's expansion. In the following part, you will see how you can become a \feel collaborator.
+
+\subsection{Creating RSA keys}
+\label{sec:creation-rsa-keys}
+At the top of the manual, you have seen how to get the sources anonymously, if you want to checkout or commit properly, you will need an account on \href{https://forge.imag.fr/}. After the administrator approval, you have to demand the rights to see the project tree. \newline \newline
+Once it's done, you will have to create RSA keys to be able to connect to the server using ssh. To do that you have to type the commands : \verb|ssh-keygen| and accept the 3 questions without typing anything. The generated key is placed in \verb|~/.ssh/id_rsa.pub|, you just need to copy this file's content in your forge account. To make it, go on the Forge website and enter into your account's personnal page. At the bottom of the page, you'll have the possibility to edit your SSH keys, go into it and copy/paste the id\_rsa.pub content. Once it's done, the number of your SSH keys in that page should have increased. Now, you will be able to connect to the server within an hour.
+%\verb|ssh-keygen -t dsa| and \linebreak[2] \verb|ssh-keygen -t rsa| to create the keys. After that, you have to copy the \verb|id_dsa.pub| and \verb|id_rsa.pub| files in the My Page > Account Maintenance > Edit SSH Keys section of the LJKForge website. Those files are located in the \verb|~/.ssh/| folder of your computer. You will be able to connect to the server within an hour.
+\\ \\
+{\bfseries Important : } If you don't have the same login on your computer as on
+Forge, you must add the commands in the \verb|~/.ssh/config| file :
+\begin{lstlisting}[language=sh]
+host forge.imag.fr
+  user <your_login_forge>
+\end{lstlisting}
+
+
+\subsection{Downloading the sources}
+\label{sec:download-sources}
+
+To be able to download the \feel sources, you need subversion and SSH > 1.xxx
+installed on your computer. In a command prompt, go where you want \feel to be
+downloaded and type the following command :
+\\ \verb|svn co svn+ssh://login@scm.forge.imag.fr/var/lib/gforge/chroot/scmrepos|
+\\ \verb|/svn/life/trunk/life/trunk feel|
+\\ where \verb|login| is your login name in the Forge plateform.
+
+% ---- Useless now ? the command above downloads all feel sources, included the feel-test ---------
+%Then, if you want to download the feel-test sources type :
+%\begin{unixcom}
+% cd feel/benchmarks
+%  svn co svn+ssh://login@scm.forge.imag.fr/var/lib/gforge/chroot/scmrepos/svn/feel-test/feel-test/trunk validation
+%\end{unixcom}
+You are now able to checkout, commit or add the file your judge usefull using \verb|svn|, please don't forget to comment on your various actions. The first commit is subject to the approbation of one of the main developers.
+
+
+\section{Programming environment}
+\label{sec:progr-envir}
+We present here a quick list of all namespaces and librairies proposed by \feel, refer to the
+tutorial which starts at chapter ~\ref{chap:getting-started} how you can use them.
+\subsection{Boost C++ Libraries}
+\label{sec:boost-c++-libraries}
+
+\feel depends on a number of libraries, some are required some are optional.
+Among the required libraries, The Boost C++ libraries play a very important role
+as they drive or shape the  design of \feel. \feel uses in particular the
+following Boost libraries:
+\begin{itemize}
+\item Boost.Parameter\index{Boost!Parameter} : use to provide powerful
+  interfaces to \feel and third party library such as
+  \begin{itemize}
+  \item PETSc  for the linear, nonlinear solvers
+  \item SLEPc for the eigenvalue solvers
+  \item GMSH for mesh generation
+  \end{itemize}
+\item Boost.MPL - meta programming library : use for type computations
+\item Boost.Fusion - linking meta-runtime programming: use for type computations
+  used at runtime
+\item Boost.Program\_Options - command-line options library : provides the
+  command line options for the \feel applications as well as configuration files
+\item Boost.Test - Unit testing framework ; used by the \feel testsuite
+\end{itemize}
+
+\subsection{\feel Namepaces}
+
+\begin{itemize}
+\item \lstinline!Feel!
+\item \lstinline!Feel::po!
+\item \lstinline!Feel::mpl!
+\item \lstinline!Feel::ublas!
+\item \lstinline!Feel::math!
+\item \lstinline!Feel::fem!
+\item \lstinline!Feel::vf!
+
+\end{itemize}
+
+
+
+\section{Linear Algebra with PETSC}
+
+\subsection{Using the Petsc Backend: recommended}
+
+Using the Petsc backend is recommended. To do that type in the command line
+\begin{lstlisting}
+    myprog --backend=petsc
+  \end{lstlisting}
+  then you can change the type of solvers and preconditioners by
+  adding Petsc options at \emph{the end of the command lines}, for example
+\begin{verbatim}
+-pc_type lu
+\end{verbatim}
+  will actually solve the problem in one iteration of an iterative solver
+  (p.ex. gmres).
+  \begin{equation}
+    \label{notes:eq:1}
+    P A x = P B
+  \end{equation}
+  where $P \approx A^{-1}$. Here $A$ is decomposed in $LU$ form and
+  (\ref{notes:eq:1}) is solved in one iteration.
+
+\subsection{List of solvers and preconditioners}
+\label{sec:list-solv-prec}
+
+List of some iterative solvers (Krylov subspace)
+\begin{itemize}
+\item cg, bicg
+\item gmres, fgmres, lgmres
+\item bcgs, bcgsl
+\item see petsc/petscksp.h for more
+\end{itemize}
+
+List of some preconditioners
+\begin{itemize}
+\item lu, choleski
+\item jacobi, sor
+\item ilu, icc
+\item see petsc/petscpc.h for more
+\end{itemize}
+
+\subsection{What is going on in the solvers?}
+\label{sec:what-going-solvers}
+
+In order to monitor what is going on (iterations, residual...) Petsc
+provides some monitoring options
+\begin{verbatim}
+-ksp_monitor
+\end{verbatim}
+For example
+\begin{verbatim}
+myprog -backend=petsc -ksp_monitor -pc_type lu
+\end{verbatim}
+it should show only one iteration.
+
+See {\tiny\texttt{http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/KSP/KSPMonitorSet.html}} for more details
+
+
+
+\section{Weak Dirichlet boudary conditions}
+\label{sec:weak-dirichl-boud}
+
+\subsection{Basic idea}
+
+\subsubsection{Weak treatment}
+  In order to treat the boundary conditions uniformly (i.e. the same
+  way as Neumann and Robin Conditions), we wish to treat the Dirichlet
+  BC (e.g. $u=g$) weakly.
+
+  \begin{remark}{Initial Idea}
+    add the penalisation term $\int_{\partial \Om{}} \mu( u - g
+    )$ where $\mu$ is a constant. But this is not enough, this is not consistent with the
+    initial formulation.
+  \end{remark}
+
+  One can use the Nitsche ``trick'' to implement weak Dirichlet conditions.
+  \begin{itemize}
+  \item write the equations in conservative form (i.e. identify the flux);
+  \item add the terms to ensure consistency (i.e the flux on the boundary);
+  \item symmetrize to ensure adjoint consistency;
+  \item add a penalisation term with factor $\gamma (u-g)/h$ that ensures
+    that the solution will be set to the proper value at the boundary;
+  \end{itemize}
+
+
+\subsubsection{Penalisation parameter}
+    \begin{remark}{Choosing $\gamma$}
+    $\gamma$ must be chosen such that the coercivity(or inf-sup)
+    property is satisfied. Difficult to do in general. Increase
+    $\gamma$ until the BC are properly satisfied, e.g. start with
+    $\gamma=1$, typical values are between 1 and 10.
+
+    The choice of $\gamma$ is a problem specially when $h$ is small.
+  \end{remark}
+
+
+
+\subsubsection{Advantages, disadvantages}
+      \begin{remark}{Weak treatment: Advantages}
+        \begin{itemize}
+        \item uniform(weak) treatment of all boundary conditions type
+        \item if boundary condition is independant of time, the terms
+          are assembled once for all
+        \item the boundary condition is not enforced exactely but the
+          convergence order remain optimal
+        \end{itemize}
+      \end{remark}
+      \begin{remark}{Weak treatment: Disadvantages}
+        \begin{itemize}
+        \item Introduction of the penalisation parameter $\gamma$ that
+          needs to be tweaked
+        \end{itemize}
+      \end{remark}
+
+\subsubsection{Advantages, disadvantages}
+  \begin{remark}{Strong treatment: Advantages}
+    \begin{itemize}
+    \item Enforce exactely the boundary conditions
+    \end{itemize}
+  \end{remark}
+  \begin{remark}{Strong treatment : Disadvantages}
+    \begin{itemize}
+    \item Need to modify the matrix once assembled to reflect that
+      the Dirichlet degree of freedom are actually known. Then
+          even if the boundary condition is independant of time, at
+          every time step if there are terms depending on time that
+          need reassembly (e.g. convection) the strong treatment needs to be reapplied.
+        \item it can be expensive to apply depending on the type of
+          sparse matrix used, for example using CSR format setting
+          rows to 0 except on the diagonal to 1 is not expensive but
+          one must do that also for the columns associated with each
+          Dirichlet degree of freedom and that is expensive.
+        \end{itemize}
+      \end{remark}
+
+\subsection{Laplacian}
+\subsubsection{Example: Laplacian}
+  \begin{equation}
+    \label{notes:eq:44}
+    -\Delta u = f (\text{non conservative}),\ -\nabla\cdot( \nabla u )= f (\text{conservative}),\ u=g|_{\partial \Omega}
+  \end{equation}
+  the flux is vector $\nabla u$
+
+  \begin{equation}
+    \label{notes:eq:51}
+    \int_\Omega \nabla u \cdot \nabla v + \int_{\partial \Om{}} \underbrace{-\frac{\partial u}{\partial n}v}_{\text{integration by part}} \underbrace{-\frac{\partial v}{\partial n} u}_{\text{adjoint consistency: symetrisation}}  + \underbrace{\frac{\gamma}{h} u v}_{\text{penalisation: enforce Dirichlet condition}}
+  \end{equation}
+  \begin{equation}
+    \label{notes:eq:52}
+    \int_\Omega f \nabla v + \int_{\partial \Om{}} (\underbrace{-\frac{\partial v}{\partial n} g}_{\text{adjoint consistency}} + \underbrace{\frac{\gamma}{h} v) g}_{\text{penalisation: enforce Dirichlet condition}}
+  \end{equation}
+
+
+\subsubsection[containsverbatim]{Example: Laplacian}
+  \begin{lstlisting}
+// bilinear form (left hand side)
+form2( Xh, Xh, _matrix=D ) +=
+integrate( boundaryfaces(mesh), im_type(),
+           -(gradt(u)*N())*id(v) // integration by part
+           -(grad(v)*N())*idt(u) // adjoint consistency
+           +gamma*id(v)*idt(u)/hFace()); // penalisation
+// linear form (right hand side)
+form1( Xh, F ) +=
+integrate( boundaryfaces(mesh), im_type(),
+           -(grad(v)*N())*g // adjoint consistency
+           +gamma*id(v)*g/hFace()); // penalisation
+  \end{lstlisting}
+
+
+\subsection{Convection-Diffusion}
+\subsubsection{Example: Convection-Diffusion}
+  \begin{remark}{Convection Diffusion}
+    Consider now the following problem, find $u$ such that
+    \begin{equation}
+      \label{notes:eq:45}
+      -\Delta u + \mathbf{c} \cdot \nabla u  = f,\quad u = g|_{\partial \Om{}},\quad \nabla \cdot \mathbf{c} = 0
+    \end{equation}
+    under conservative form the equation reads
+    \begin{equation}
+      \label{notes:eq:2}
+      \nabla \cdot ( -\nabla u + \mathbf{c} u ) = f,\quad u = g|_{\partial \Om{}},\quad \nabla \cdot \mathbf{c} = 0
+    \end{equation}
+    the flux vector field is $\mathbf{F}=-\nabla u + \mathbf{c} u$. Note that
+    here the condition, $\nabla \cdot \mathbf{c} = 0$ was crucial to
+    expand $\nabla \cdot (\mathbf{c} u )$ into $\mathbf{c} \cdot \nabla u$ since
+    \begin{equation}
+      \label{notes:eq:3}
+      \nabla \cdot (\mathbf{c} u ) = \mathbf{c} \cdot \nabla u + \underbrace{u \nabla \cdot \mathbf{c}}_{=0}
+    \end{equation}
+  \end{remark}
+
+
+\subsubsection{Weak formulation for convection diffusion}
+  Multiplying by any test function $v$ and integration by
+  part of (\ref{notes:eq:2}) gives
+  \begin{equation}
+    \label{notes:eq:4}
+    \int_\Omega \nabla u \cdot \nabla v + (\mathbf{c} \cdot \nabla u)v + \int_{\partial \Omega} (\mathbf{F}\cdot \mathbf{n}) v = \int_\Omega f v
+  \end{equation}
+  where $\mathbf{n}$ is the outward unit normal to $\partial
+  \Omega$. We now introduce the penalisation term that will ensure
+  that $u \rightarrow g$ as $h \rightarrow 0$ on $\partial \Omega$. (\ref{notes:eq:4}) reads now
+  \begin{equation}
+    \label{notes:eq:5}
+    \int_\Omega \nabla u \cdot \nabla v + (\mathbf{c} \cdot \nabla u)v + \int_{\partial \Omega} (\mathbf{F}\cdot \mathbf{n}) v + \mathbf{\frac{\gamma}{h} u v}  = \int_\Omega f v + \mathbf{\int_{\partial \Omega} \frac{\gamma}{h} g v}
+  \end{equation}
+
+  Finally we incorporate the symetrisation of the bilinear form to ensure adjoint consistency and hence proper convergence order
+  \begin{equation}
+    \label{notes:eq:6}
+    \begin{split}
+      \int_\Omega \nabla u \cdot \nabla v + (\mathbf{c} \cdot \nabla u)v +
+      \int_{\partial \Omega} ((-\nabla u + \mathbf{c} u)\cdot \mathbf{n}) v+ \mathbf{((-\nabla v + \mathbf{c} v)\cdot \mathbf{n}) u} + \frac{\gamma}{h} u v  = \\
+      \int_\Omega f v + \int_{\partial \Omega} \mathbf{((-\nabla v + \mathbf{c} v)\cdot \mathbf{n}) g}+ \frac{\gamma}{h} g v
+    \end{split}
+  \end{equation}
+
+
+\subsubsection[containsverbatim]{Example: Convection-Diffusion}
+  \begin{lstlisting}
+// bilinear form (left hand side)
+form2( Xh, Xh, _matrix=D ) +=
+integrate( boundaryfaces(mesh), im_type(),
+           // integration by part
+           -(gradt(u)*N())*id(v) + (idt(u)*trans(idv(c))*N())*id(v)
+           // adjoint consistency
+           -(grad(v)*N())*idt(u) + (id(v)*trans(idv(c))*N())*idt(u)
+           // penalisation
+           +gamma*id(v)*idt(u)/hFace());
+// linear form (right hand side)
+form1( Xh, F ) +=
+integrate( boundaryfaces(mesh), im_type(),
+           // adjoint consistency
+           -(grad(v)*N())*g + (id(v)*trans(idv(c))*N())*g
+           // penalisation
+           +gamma*id(v)*g/hFace());
+  \end{lstlisting}
+
+
+\subsection{Stokes}
+\subsubsection{Example: Stokes}
+  \begin{remark}{Stokes}
+    Consider now the following problem, find $(\mathbf{u},p)$ such that
+    \begin{equation}
+      \label{notes:eq:45}
+      -\Delta \mathbf{u} + \nabla p  = \mathbf{f},\quad \mathbf{u} = \mathbf{g}|_{\partial \Om{}},\quad \nabla \cdot \mathbf{u} = 0
+    \end{equation}
+    under conservative form the equation reads
+    \begin{eqnarray}
+      \nabla \cdot ( -\nabla \mathbf{u} + p \mathbb{I} ) &= \mathbf{f},\label{notes:eq:8}\\
+      \nabla \cdot \mathbf{u} &= 0,\label{notes:eq:10}\\
+      \mathbf{u} &= \mathbf{g}|_{\partial \Om{}}\label{notes:eq:11}
+    \end{eqnarray}
+    where $\mathbb{I}(\mathbf{x})=
+    \begin{pmatrix}
+      1 & 0\\
+      0 & 1
+    \end{pmatrix}\text{(in 2D)}
+    \ \forall \mathbf{x} \in \Omega$ is the identity tensor(matrix) field $\in
+    \mathbb{R}^{d\times d}$. The flux tensor field is
+    $\mathbf{F}=-\nabla \mathbf{u} + p\mathbb{I}$. Indeed we have  the
+    following relation, if $\mathbb{M}$ is a tensor (rank 2) field and $\mathbf{v}$ is a vector field
+    \begin{equation}
+      \label{notes:eq:12}
+      \nabla \cdot ( \mathbb{M} \mathbf{v} ) = (\nabla \cdot \mathbb{M}) \cdot \mathbf{v} + \mathbb{M} \colon (\nabla \mathbf{v})
+    \end{equation}
+    where $\mathbb{M} \colon (\nabla \mathbf{v}) =
+    \mathrm{trace}(\mathbb{M}*\nabla \mathbf{v}^T)$, $*$ is the
+    matrix-matrix multiplication and $\nabla \cdot \mathbb{M}$ is the
+    vector field with components the divergence of each row of
+    $\mathbb{M}$. For example $\nabla \cdot (p\ \mathbb{I})=\nabla \cdot
+    \begin{pmatrix}
+      p & 0 \\
+      0 & p
+    \end{pmatrix}(\text{in 2D}) =  \nabla p$.
+  \end{remark}
+
+
+\subsubsection{Weak formulation for Stokes}
+  Taking the scalar product of (\ref{notes:eq:8}) by any test function
+  $\mathbf{v}$ (associated to velocity) and multiplying (\ref{notes:eq:10})
+  by any test function $q$ (associated to pressure), the variational
+  formulation of (\ref{notes:eq:8}) reads, thanks to~(\ref{notes:eq:12}),
+  \begin{equation}
+    \label{notes:eq:9}
+    \int_\Omega \nabla \mathbf{u} \colon \nabla \mathbf{v} +  p \nabla \cdot \mathbf{v} + \int_{\partial \Omega} ( (-\nabla \mathbf{u} + p\mathbb{I}) \mathbf{n}) \cdot \mathbf{v} = \int_\Omega \mathbf{f} \cdot \mathbf{v}
+  \end{equation}
+  where $\mathbf{n}$ is the outward unit normal to $\partial
+  \Omega$. We now introduce the penalisation term that will ensure
+  that $\mathbf{u} \rightarrow \mathbf{g}$ as $h \rightarrow 0$ on $\partial \Omega$. (\ref{notes:eq:9}) reads now
+  \begin{equation}
+    \label{notes:eq:14}
+    \int_\Omega \nabla \mathbf{u} \colon \nabla \mathbf{v} +  p \nabla \cdot \mathbf{v} + \int_{\partial \Omega} ((-\nabla \mathbf{u} + p\mathbb{I}) \mathbf{n})\cdot \mathbf{v} + \mathbf{\frac{\gamma}{h} \mathbf{u}\cdot \mathbf{v}}  = \int_\Omega \mathbf{f} \cdot \mathbf{v} + \mathbf{\int_{\partial \Omega} \frac{\gamma}{h} \mathbf{g} \cdot \mathbf{v}}
+  \end{equation}
+
+  Finally we incorporate the symetrisation of the bilinear form to ensure adjoint consistency and hence proper convergence order
+  \begin{equation}
+    \label{notes:eq:15}
+    \begin{split}
+      \int_\Omega \nabla \mathbf{u} \colon \nabla \mathbf{v} +  p \nabla \cdot \mathbf{v} +
+      \int_{\partial \Omega} ((-\nabla \mathbf{u} + p\mathbb{I}) \mathbf{n})\cdot \mathbf{v} + ((-\nabla \mathbf{v} + q\mathbb{I}) \mathbf{n})\cdot \mathbf{u} + \frac{\gamma}{h} \mathbf{u}\cdot \mathbf{v} = \\
+      \int_\Omega \mathbf{f} \cdot \mathbf{v} + \int_{\partial \Omega} ((-\nabla \mathbf{v} + q\mathbb{I}) \mathbf{n})\cdot \mathbf{g} + \frac{\gamma}{h} \mathbf{g} \cdot \mathbf{v}
+    \end{split}
+  \end{equation}
+
+
+\subsubsection[containsverbatim]{Example: Stokes}
+  \begin{lstlisting}
+    // total stress tensor (trial)
+    AUTO( SigmaNt, (-idt(p)*N()+mu*gradt(u)*N()) );
+    // total stress tensor (test)
+    AUTO( SigmaN, (-id(p)*N()+mu*grad(v)*N()) );
+    // linear form (right hand side)
+    form1( Xh, F ) +=
+    integrate( boundaryfaces(mesh), im,
+               trans(g)*(-SigmaN+gamma*id(v)/hFace() ) );
+    // bilinear form (left hand side)
+    form2( Xh, Xh, _matrix=D )+=
+    integrate( boundaryfaces(mesh), im,
+               -trans(SigmaNt)*id(v)
+               -trans(SigmaN)*idt(u)
+               +gamma*trans(idt(u))*id(v)/hFace() );
+  \end{lstlisting}
+
+
+
+\section{Stabilisation techniques}
+
+\subsection{Convection dominated flows}
+
+Consider this type of problem
+\begin{equation}
+  \label{notes:eq:46}
+  -\epsilon \Delta u + \mathbf{c} \cdot \nabla u + \gamma u = f,\quad \nabla \cdot \mathbf{c} = 0
+\end{equation}
+Introduce $\mathrm{Pe}=\frac{|\mathbf{c}|h}{\epsilon}$ the \emph{Péclet}
+number. The dominating convection occurs when, on at least some cells,
+$\mathrm{Pe} >> 1$. We talk about singularly (i.e. $\epsilon << h$)
+perturbed flows.
+
+Without doing anything wiggles occur. There are remedies  so
+called \emph{Stabilisation Methods}, here some some examples:
+\begin{itemize}
+\item Artificial diffusion (streamline diffusion) (SDFEM)
+\item Galerkin Least Squares method (GaLS)
+\item Streamline Upwind Petrov Galerkin (SUPG)
+\item Continuous Interior Penalty methods (CIP)
+\end{itemize}
+
+\subsection{The CIP methods}
+  Add the term
+  \begin{equation}
+    \label{notes:eq:47}
+    \sum_{F \in \Gamma_\mathrm{int} } \int_{F} \gamma\ h_F^2\ |\mathbf{c} \cdot \mathbf{n}|\  [\nabla u]  [\nabla v]
+  \end{equation}
+  where $\Gamma_\mathrm{int}$ is the set of internal faces where the
+  $\mathrm{Pe}>>1$ (typically it is applied to all internal faces) and
+  \begin{equation}
+    \label{notes:eq:50}
+    [\nabla u] = \nabla u \cdot \mathbf{n}|_1 + \nabla u \cdot \mathbf{n}|_2
+  \end{equation}
+  is the jump of $\nabla u$(scalar valued) across the face.  In the
+  case of scalar valued functions
+  \begin{equation}
+    \label{notes:eq:53}
+    [u] = u \mathbf{n}|_1 + u \mathbf{n}|_2
+  \end{equation}
+  \begin{remark}[Choice for $\gamma$]
+    $\gamma$ can be taken in the range $[1e-2;1e-1]$. A typical value is $2.5e-2$.
+  \end{remark}
+
+
+\begin{lstlisting}
+    // define the stabilisation coefficient expression
+    AUTO( stab_coeff , ($\gamma_\beta$ abs(trans(N())*idv(beta)))*
+                        vf::pow(hFace(),2.0));
+
+    // assemble the stabilisation operator
+    form2( Xh, Xh, _matrix=M ) +=
+     integrate(
+        // internal faces of the mesh
+        internalfaces(Xh->mesh()),
+        // integration method
+        _Q<OrderOfPolynomialToBeIntegratedExactely>,
+        // stabilisation term
+        stab_coeff*(trans(jumpt(gradt(u)))*jump(grad(v))));
+\end{lstlisting}
+
+\section{Interpolation}
+
+In order to interpolate a function defined on one domain to another domain, one
+can use the \lstinline{interpolate} function. The basis function of the image
+space must be of \lstinline{Lagrange} type.
+
+\begin{lstlisting}
+typedef bases<Lagrange<Order, Vectorial> > basis_type; // velocity
+typedef FunctionSpace<mesh_type, basis_type, value_type> space_type;
+// ...
+space_ptrtype Xh = space_type::New( mesh1 );
+element_type u( Xh, "u" );
+space_ptrtype Yh = space_type::New( mesh2 );
+element_type v( Yh, "v" );
+
+// interpolate u on mesh2 and store the result in v
+interpolate( Yh, u, v );
+\end{lstlisting}
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-PDF-mode: t
+%%% TeX-parse-self: t
+%%% x-symbol-8bits: nil
+%%% TeX-auto-regexp-list: TeX-auto-full-regexp-list
+%%% TeX-master: "feelpp-manual"
+%%% ispell-local-dictionary: "american"
+%%% End:
+

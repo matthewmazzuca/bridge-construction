@@ -1,0 +1,113 @@
+\feelchapter{2D Maxwell simulation in a diode}
+            {2D Maxwell simulation in a diode}
+            {Thomas Strub, Philippe Helluy, Christophe Prud'homme}
+            {cha:maxwell-2d}
+\newcommand{\E}{\ensuremath{{\bm E}}\xspace}
+\newcommand{\B}{\ensuremath{{\bm B}}\xspace}
+\newcommand{\J}{\ensuremath{{\bm J}}\xspace}
+\section{Description}
+\label{sec:description}
+
+The Maxwell equations read:
+
+
+\begin{eqnarray*}
+\frac{-1}{c^{2}}\frac{\partial \E}{\partial t}+\nabla\times \B & = & \mu_{0} \J\\
+\B_{t}+\nabla\times \E & = & 0\\
+\nabla \cdot \B & = & 0\\
+\nabla \cdot \E & = & \frac{\rho}{\epsilon_{o}}
+\end{eqnarray*}
+
+where \E is the electric field, \B the magnetic field,
+\J the current density, $ c $ the speed of light, $ \ rho $
+density of electric charge, $ \ mu_ {0} $ the vacuum permeability
+and $ \ epsilon_ {0} $ the vacuum permittivity.
+
+In the midst industrial notament in aeronautics, systems
+Products must verify certain standards such as the receipt
+an electromagnetic wave emitted by a radar does not cause
+the inefficassité of part or all of the hardware in the
+system.
+
+Thus, the simulation of such situations can develop when
+or during the certification of a new product to test its reaction
+to such attacks.
+
+Also note that the last two equations are actually
+initial conditions, since if we assume they are true at the moment
+$ t = 0$ then it can be deduced from the first two.
+
+At $t=0s$, we suppose that
+\begin{eqnarray}
+\nabla \cdot \B & = & 0\\
+\nabla \cdot \E & = & \frac{\rho}{\epsilon_{o}}
+\end{eqnarray}
+
+Suppose that $\B = (B_x, B_y, B_z )^T$ and $\E=(E_x,E_y,E_z)^T$
+i.e.\begin{eqnarray}
+\frac{\partial B_{x}}{\partial x}(t=0)+\frac{\partial B_{y}}{\partial y}(t=0)+\frac{\partial B_{z}}{\partial z} & (t=0)= & 0\\
+\frac{\partial E_{x}}{\partial x}(t=0)+\frac{\partial E_{y}}{\partial
+y}(t=0)+\frac{\partial E_{z}}{\partial z} & (t=0)= & \frac{\rho}{\epsilon_{o}}
+\end{eqnarray}
+
+
+Differentiating the first of these two equations with respect to time,
+we get:
+
+
+\begin{multline}
+  \label{eq:6}
+\frac{\partial}{\partial t}\frac{\partial}{\partial
+x}B_{x}+\frac{\partial}{\partial t}\frac{\partial}{\partial y}B_{y}+\frac{\partial}{\partial t}\frac{\partial}{\partial z}B_{z} = \\
+\frac{\partial}{\partial x}\left(\frac{\partial}{\partial y}E_{z}-\frac{\partial}{\partial z}E_{y}\right)+\frac{\partial}{\partial y}\left(\frac{\partial}{\partial z}E_{x}-\frac{\partial}{\partial x}E_{z}\right)+\frac{\partial}{\partial z}\left(\frac{\partial}{\partial x}E_{y}-\frac{\partial}{\partial y}E_{x}\right)\\
+ =  0
+\end{multline}
+
+
+
+thanks to
+
+\begin{equation}
+  \label{eq:3}
+  \B_{t}+\nabla\times \E=0
+\end{equation}
+
+
+
+So, for all $t\geq0$,
+\begin{equation}
+  \label{eq:4}
+  \nabla \cdot \B(t)=\nabla\cdot\B(0)=0
+\end{equation}
+
+We deduce the same way the second equation, using the charge
+conservation equation :
+
+
+\begin{equation}
+  \label{eq:2}
+  \frac{\partial \rho}{\partial t} + \nabla \cdot  (\rho \J) = 0
+\end{equation}
+
+
+
+\section{Variational formulation}
+\label{sec:vari-form}
+
+\section{Implementation}
+\label{sec:implementation}
+
+\section{Numerical Results}
+\label{sec:numerical-results}
+
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-PDF-mode: t
+%%% TeX-parse-self: t
+%%% x-symbol-8bits: nil
+%%% TeX-auto-regexp-list: TeX-auto-full-regexp-list
+%%% TeX-master: "../feel-manual"
+%%% ispell-local-dictionary: "american"
+%%% End:

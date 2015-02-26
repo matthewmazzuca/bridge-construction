@@ -1,0 +1,14 @@
+/CMakeFiles
+/Makefile
+/Makefile.in
+/TAGS
+/cmake_install.cmake
+/gmsh.cpp~
+/gmsh.hpp~
+/gmshsimplexdomain.cpp~
+/gmshsimplexdomain.hpp~
+/gmshtensorizeddomain.cpp~
+/gmshtensorizeddomain.hpp~
+/importergmsh.hpp~
+/liblifefilters.a
+/pointsettomesh.hpp~

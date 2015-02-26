@@ -1,0 +1,161 @@
+\feelchapter{Getting Started with Feel++}
+            {Getting Started with Feel++}
+            {Christophe Prud'homme, Baptiste Morin, Guillaume Dollé}
+            {getting-started}
+
+
+% first application
+\input{tutorial/myapp}
+
+
+\subsection{Initializing PETSc and Trilinos}
+
+\index{PETSc}\index{Trilinos}\index{Libraries!PETSc}\index{Libraries!Trilinos}
+
+PETSc is a suite of data structures and routines for the scalable (parallel)
+solution of scientific applications modeled by partial differential
+equations. It employs the MPI standard for parallelism.
+
+\feel supports the PETSc framework, the \lstinline!Environment! \index{Environment}
+takes care of initializing the associated PETSc environment.
+
+
+% mesh manipulation
+\input{tutorial/mymesh}
+
+% integrals computing
+\input{tutorial/myintegrals}
+
+% function spaces
+\input{tutorial/myfunctionspace}
+
+% solve laplacian dirichlet homogene
+\input{tutorial/mylaplacian}
+
+% solve stokes poiseuille flow
+\input{tutorial/mystokes}
+
+% solve advection equations
+\input{tutorial/myadvection}
+
+\section{Linear Algebra}
+\label{sec:linear-algebra}
+
+\feel supports \textsc{PETSc} as it Linear algebra backend. \textsc{PETSc} is a
+suite of data structures and routines for the scalable solution of scientific
+applications modeled by PDE available at
+\url{http://www.mcs.anl.gov/petsc/petsc-as/}
+
+
+
+\subsection{Choosing a linear algebra backend}
+\label{sec:choos-line-algebra}
+
+\index{Class!Backend}\index{boost!shared\_ptr}
+To select a backend in order to solve a linear system, we instantiate
+the \lstinline!Backend! class associated :
+\begin{lstlisting}
+#include <feel/feelalg/backend.hpp>
+boost::shared_ptr<Backend<double> > backend =
+     Backend<double>::build( BACKEND_PETSC );
+\end{lstlisting}
+The backend provides an interface to solve
+\begin{equation}
+  \label{eq:8}
+  A x = b
+\end{equation}
+where $A$ is a $n \times n $ sparse matrix and $x,b$ vectors of size $n$. The backend defines the \cpp types for  each of these, e.g :
+\begin{lstlisting}
+Backend<double>::sparse_matrix_type A;
+Backend<double>::vector_type x,b;
+\end{lstlisting}
+In practice, we use the \lstinline!boost::shared_ptr<>! shared pointer
+to ensure that we won't get memory leaks. The backends provide a
+corresponding \lstinline!typedef!
+
+\begin{lstlisting}
+Backend<double>::sparse_matrix_ptrtype A( backend->newMatrix( Xh, Yh ) );
+Backend<double>::vector_ptrtype x( backend->newVector( Yh ) );
+Backend<double>::vector_ptrtype b( backend->newVector( Xh ) );
+\end{lstlisting}
+where $X_h$ and $Y_h$ are function spaces providing the number of
+degrees of freedom that will define the size of the matrix and vectors
+thanks to the helpers functions \lstinline!Backend::newMatrix()! and
+\lstinline!Backend::newVector!. In a parallel setting, the
+local/global processor mapping would be passed down by the function
+spaces.
+
+%\subsection{Defining and using matrices and vectors}
+%\label{sec:defin-using-matr}
+
+\subsection{Solving}
+\label{sec:solving}
+
+To solve the linear problem $Ax=b$, the backend provides a function \lstinline!solve! with three required parameters
+\begin{lstlisting}
+ solve(_matrix=A, _solution=x, _rhs=b)
+\end{lstlisting}
+where :
+\begin{itemize}
+\item the matrix $A$ has a \lstinline!sparse_matrix_ptrtype! type
+\item the solution $x$ has a type \lstinline!vector_type! or \lstinline!vector_ptrtype!
+\item the second member vector $b$ has a type \lstinline!vector_ptrtype!
+\end{itemize}
+You can also add optional parameters like :
+\begin{itemize}
+
+\item a preconditioner : instead of solving $Ax=b$, we solve $P^{-1}Ax= P^{-1}b$. This method can be applied in iterative methods and permits to decrease the number of iterations in the resolution system
+
+\item a maximum number of iterations : this option is used with an iterative solving method
+
+\item a residual tolerance : the fraction $\displaystyle{\frac{\mid\mid r^{(k)} \mid\mid }{\mid\mid r^{(0)} \mid\mid}}$ is inferior to the residual tolerance with
+$r^{(k)}=b-Ax^{(k)}$ and $x^{(k)}$ the solution at the $k^{th}$ iteration
+
+\item a absolute tolerance : $\mid\mid r^{(k)} \mid\mid $ is inferior to the absolute tolerance
+
+\item a different tolerance : sometimes, the residue doesn’t decrease continuously during the iterations. The difference between two plots doesn’t have to exceed the parameter choosen for the difference tolerance.
+
+\item a boolean to use transpose matrix : instead of solving $Ax=b$, we solve $A^{t}x=b$. If $A$ is defined and positive, $A^{t}=A$.
+
+\end{itemize}
+
+To have a view of the values of the optional parameters, see the following code :
+
+\begin{lstlisting}
+BOOST_PARAMETER_MEMBER_FUNCTION(
+	(solve_return_type),
+         solve,
+         tag,
+         (required
+	(matrix,(sparse_matrix_ptrtype))
+	(in_out(solution),*(mpl::or_<boost::is_convertible<mpl::_,vector_type&>,
+                                         boost::is_convertible<mpl::_,vector_ptrtype> >))
+	(rhs,(vector_ptrtype)))
+	(optional
+	  (prec,(sparse_matrix_ptrtype), matrix )
+	  (maxit,(size_type), 1000 )
+	  (rtolerance,(double), 1e-13)
+	  (atolerance,(double), 1e-50)
+	  (dtolerance,(double), 1e5)
+	  (reuse_prec,(bool), false )
+	  (transpose,(bool), false )
+	  )
+	)
+    {
+\end{lstlisting}
+
+\noindent The library \lstinline!Boost::Parameters! allows you to enter parameters in the order you want. It supports deduced parameters,  that is to say parameters whose identity can be deduced from their types.
+
+
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-PDF-mode: t
+%%% TeX-parse-self: t
+%%% x-symbol-8bits: nil
+%%% TeX-auto-regexp-list: TeX-auto-full-regexp-list
+%%% TeX-master: "../feelpp-manual"
+%%% ispell-local-dictionary: "american"
+%%% End:
+
